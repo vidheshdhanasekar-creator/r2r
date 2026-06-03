@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:wght@700;900&display=swap');
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-orange: #FF6A00;
+  --color-brand-accent: #FF8C1A;
+  --color-brand-dark: #0B0B0B;
+  --color-brand-card: #141414;
+  --color-brand-textSec: #A1A1A1;
+  --color-brand-lightBg: #F5F5F7;
+  --color-brand-lightCard: #FFFFFF;
+  --color-brand-lightBorder: #E5E7EB;
+
+  --font-bebas: "Bebas Neue", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-serif: "Playfair Display", serif;
+
+  --shadow-glow: 0 0 15px rgba(255, 106, 0, 0.3);
+  --shadow-glow-strong: 0 0 25px rgba(255, 106, 0, 0.6);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-glow-pulse: glowPulse 2s ease-in-out infinite alternate;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes glowPulse {
+    0% { box-shadow: 0 0 10px rgba(255, 106, 0, 0.2); }
+    100% { box-shadow: 0 0 25px rgba(255, 106, 0, 0.7); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+}
+
+@layer base {
+  body {
+    @apply font-poppins transition-colors duration-500 ease-in-out;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(245, 245, 247, 0.5);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #060606;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-orange/40 rounded-full hover:bg-brand-orange/60 transition-colors;
+}
+
+/* Custom utilities */
+.glass-panel {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+}
+
+.dark .glass-panel {
+  background: rgba(20, 20, 20, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+.glass-panel-heavy {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 106, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-panel-heavy {
+  background: rgba(11, 11, 11, 0.9);
+  border: 1px solid rgba(255, 106, 0, 0.15);
+  box-shadow: none;
+}
+
+/* Cinematic Glow Effects */
+.orange-glow {
+  box-shadow: 0 0 25px rgba(255, 106, 0, 0.3);
+}
+
+.orange-glow-lg {
+  box-shadow: 0 0 45px rgba(255, 106, 0, 0.45);
+}
+
+.text-glow {
+  text-shadow: 0 0 12px rgba(255, 106, 0, 0.6);
+}
+
+.text-glow-strong {
+  text-shadow: 0 0 24px rgba(255, 106, 0, 0.8), 0 0 8px rgba(255, 106, 0, 0.4);
+}
+
+/* Gradients */
+.gradient-text-orange {
+  background: linear-gradient(135deg, #FF6A00 0%, #FF8C1A 50%, #FF3B00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-bg-orange {
+  background: linear-gradient(135deg, #FF6A00 0%, #FF8C1A 100%);
+}
+
+.gradient-bg-orange-dark {
+  background: linear-gradient(135deg, #FF6A00 0%, #FF3B00 100%);
+}
+
+.gradient-bg-cinematic {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 106, 0, 0.06) 0%, rgba(245, 245, 247, 0) 70%);
+}
+
+.dark .gradient-bg-cinematic {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 106, 0, 0.15) 0%, rgba(11, 11, 11, 0) 70%);
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.02) 20%,
+    rgba(0, 0, 0, 0.05) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  animation: shimmer 2s infinite;
+  content: '';
+}
+
+.dark .shimmer::after {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Swiper styling override for dark theme navigation */
+.swiper-pagination-bullet {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #FF6A00 !important;
+  width: 20px !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease;
+}
+
+.dark .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+.dark .swiper-pagination-bullet-active {
+  background: #FF6A00 !important;
+}
+
+/* Hide standard styling of input ranges */
+input[type="range"]::-webkit-slider-thumb {
+  background: #FF6A00;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 8px rgba(255, 106, 0, 0.8);
+}
+
+/* Custom scrollbars reset utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Light Mode contrast accessibility overrides */
+html:not(.dark) {
+  h1.text-white:not(.keep-colors):not(.keep-colors *),
+  h2.text-white:not(.keep-colors):not(.keep-colors *),
+  h3.text-white:not(.keep-colors):not(.keep-colors *),
+  h4.text-white:not(.keep-colors):not(.keep-colors *),
+  h5.text-white:not(.keep-colors):not(.keep-colors *),
+  h6.text-white:not(.keep-colors):not(.keep-colors *),
+  .text-white:not(.keep-colors):not(.keep-colors *):not(button):not(a):not([class*="bg-brand-orange"]):not([class*="bg-brand-accent"]):not([class*="bg-zinc"]):not([class*="bg-emerald"]):not([class*="bg-black"]):not([class*="bg-brand-dark"]):not([class*="gradient"]):not(button *):not(a *):not(.bg-brand-orange *):not(.bg-brand-accent *):not(.bg-brand-dark *):not(.gradient-bg-orange *):not(.gradient-bg-orange-dark *):not([class*="bg-emerald"] *) {
+    color: #1f2937 !important;
+  }
+
+  .text-brand-textSec:not(.keep-colors):not(.keep-colors *):not([class*="bg-brand-orange"] *):not([class*="bg-brand-dark"] *):not(button *) {
+    color: #4b5563 !important;
+  }
+
+  .text-zinc-400:not(.keep-colors):not(.keep-colors *):not([class*="bg-brand-orange"] *):not([class*="bg-brand-dark"] *):not(button *) {
+    color: #4b5563 !important;
+  }
+
+  .text-zinc-500:not(.keep-colors):not(.keep-colors *):not([class*="bg-brand-orange"] *):not([class*="bg-brand-dark"] *):not(button *) {
+    color: #374151 !important;
+  }
+}
