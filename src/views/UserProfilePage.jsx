@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Calendar, CreditCard, Heart, LogOut, Sun, Moon, Sparkles, ShieldCheck, Camera, Coins, Star, Settings, Check, Plus, Trash2, Award, Zap, Film, Eye, Heart as LucideHeart, Play, X } from 'lucide-react';
+import { User, MapPin, Calendar, CreditCard, Heart, LogOut, Sun, Moon, Sparkles, ShieldCheck, Camera, Coins, Star, Settings, Check, Plus, Trash2, Award, Zap, Film, Eye, Heart as LucideHeart, Play, X, Mail, Phone, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { CREATORS } from '../utils/mockData';
@@ -8,7 +8,29 @@ import AnimatedButton from '../components/AnimatedButton';
 
 export default function UserProfilePage() {
   const navigate = useNavigate();
-  const { theme, toggleTheme, role, bookings } = useTheme();
+  const { theme, toggleTheme, role, bookings, user, login, logout } = useTheme();
+
+  // Auth states
+  const [authMode, setAuthMode] = useState('signup'); // 'signup' or 'login'
+  const [authStep, setAuthStep] = useState('form'); // 'form' or 'otp'
+  
+  // Forms state
+  const [signupForm, setSignupForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'client', // 'client' or 'creator'
+    location: 'Chennai, Tamil Nadu'
+  });
+
+  const [loginForm, setLoginForm] = useState({
+    phoneOrEmail: '',
+    role: 'client'
+  });
+
+  const [otpVal, setOtpVal] = useState(['', '', '', '']);
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Active creator profile (Karthik Raja)
   const creatorData = CREATORS[0];
@@ -35,20 +57,88 @@ export default function UserProfilePage() {
   const [newReelTitle, setNewReelTitle] = useState('');
   const [newReelThumbnail, setNewReelThumbnail] = useState('https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=500&q=80');
 
-  // Client info state
-  const clientUser = {
-    name: 'Raam',
-    role: 'Creator Client',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-    coverImage: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80',
-    location: 'Chennai, Tamil Nadu',
-    email: 'raam.chennai@gmail.com',
-    memberSince: 'May 2026',
-    stats: {
-      bookings: bookings.length,
-      favorites: 2,
-      reviews: 1
+  const handleSignupSubmit = (e) => {
+    e.preventDefault();
+    setAuthError('');
+    if (!signupForm.name.trim() || !signupForm.email.trim() || !signupForm.phone.trim()) {
+      setAuthError('Please fill in all details.');
+      return;
     }
+    setAuthStep('otp');
+  };
+
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    setAuthError('');
+    if (!loginForm.phoneOrEmail.trim()) {
+      setAuthError('Please enter your phone number or email.');
+      return;
+    }
+    setAuthStep('otp');
+  };
+
+  const handleOtpChange = (index, value) => {
+    if (isNaN(value)) return;
+    const newOtp = [...otpVal];
+    newOtp[index] = value;
+    setOtpVal(newOtp);
+
+    // Auto focus next input
+    if (value !== '' && index < 3) {
+      const nextInput = document.getElementById(`otp-input-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && otpVal[index] === '' && index > 0) {
+      const prevInput = document.getElementById(`otp-input-${index - 1}`);
+      if (prevInput) {
+        prevInput.focus();
+        const newOtp = [...otpVal];
+        newOtp[index - 1] = '';
+        setOtpVal(newOtp);
+      }
+    }
+  };
+
+  const handleOtpVerify = (e) => {
+    e.preventDefault();
+    setAuthError('');
+    const fullOtp = otpVal.join('');
+    
+    if (fullOtp.length < 4) {
+      setAuthError('Please enter a 4-digit code.');
+      return;
+    }
+
+    setAuthLoading(true);
+    setTimeout(() => {
+      setAuthLoading(false);
+      
+      const userData = authMode === 'signup' ? {
+        name: signupForm.name,
+        email: signupForm.email,
+        phone: `+91 ${signupForm.phone}`,
+        role: signupForm.role,
+        location: signupForm.location
+      } : {
+        name: loginForm.phoneOrEmail.includes('@') ? loginForm.phoneOrEmail.split('@')[0] : 'Demo User',
+        email: loginForm.phoneOrEmail.includes('@') ? loginForm.phoneOrEmail : 'demo@ready2reel.com',
+        phone: !loginForm.phoneOrEmail.includes('@') ? loginForm.phoneOrEmail : '+91 98401 23456',
+        role: loginForm.role,
+        location: 'Chennai, India'
+      };
+
+      login(userData);
+      setAuthStep('form');
+      setOtpVal(['', '', '', '']);
+    }, 1000);
+  };
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/profile');
   };
 
   const handleAddGear = (e) => {
@@ -89,23 +179,234 @@ export default function UserProfilePage() {
     setShowUploadModal(false);
   };
 
-  // Creator identity metadata
-  const creatorUser = {
-    name: creatorData.name,
-    role: creatorData.role,
-    avatar: creatorData.avatar,
-    coverImage: creatorData.coverImage,
-    location: creatorData.location + ', India',
-    email: 'karthik.films@r2r.com',
-    memberSince: 'June 2025',
+  // Dynamic user mapping based on auth state
+  const clientUser = user ? {
+    name: user.name,
+    role: 'Creator Client',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+    coverImage: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80',
+    location: user.location,
+    email: user.email,
+    phone: user.phone,
+    memberSince: 'June 2026',
     stats: {
-      shoots: creatorData.stats.projects,
-      rating: creatorData.rating,
-      active: bookings.filter(b => b.creator.id === 'c1' && b.status !== 'Delivered' && b.status !== 'Cancelled').length
+      bookings: bookings.length,
+      favorites: 2,
+      reviews: 1
     }
-  };
+  } : null;
 
-  const activeUser = role === 'creator' ? creatorUser : clientUser;
+  const creatorUser = user ? {
+    name: user.name,
+    role: 'Marketplace Creator',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80',
+    coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+    location: user.location,
+    email: user.email,
+    phone: user.phone,
+    memberSince: 'June 2026',
+    stats: {
+      shoots: bookings.filter(b => b.status === 'Delivered').length,
+      rating: 4.9,
+      active: bookings.filter(b => b.status !== 'Delivered' && b.status !== 'Cancelled').length
+    }
+  } : null;
+
+  const activeUser = user ? (user.role === 'creator' ? creatorUser : clientUser) : {};
+
+  // Auth screen render
+  if (!user) {
+    return (
+      <div className="relative min-h-screen bg-transparent pb-32 lg:pl-76 flex flex-col items-center justify-center px-4 md:px-8 pt-20 lg:pt-8">
+        {/* Ambient background glow */}
+        <div className="absolute top-0 right-0 w-full max-w-4xl h-[500px] bg-gradient-bg-cinematic opacity-80 pointer-events-none" />
+
+        <div className="w-full max-w-md glass-panel border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-glass mt-8">
+          {/* Header */}
+          <div className="flex flex-col items-center gap-2 mb-6">
+            <span className="text-brand-orange text-[10px] font-bold uppercase tracking-widest bg-brand-orange/10 px-3 py-1 rounded-full flex items-center gap-1">
+              <Sparkles size={11} className="animate-pulse" /> Ready2Reel Console
+            </span>
+            <h2 className="font-bebas text-3xl sm:text-4xl text-white tracking-wide font-bold">
+              {authStep === 'otp' ? 'Verification' : authMode === 'signup' ? 'Create Account' : 'Welcome Back'}
+            </h2>
+            <p className="text-xs text-brand-textSec font-poppins text-center">
+              {authStep === 'otp' 
+                ? 'Enter the 4-digit code to complete setup'
+                : authMode === 'signup' 
+                  ? 'Sign up to connect with elite cinematic filmmakers' 
+                  : 'Enter your credentials to access your console'}
+            </p>
+          </div>
+
+          {authError && (
+            <div className="mb-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs px-4 py-3 rounded-xl font-poppins">
+              {authError}
+            </div>
+          )}
+
+          {authStep === 'form' ? (
+            <form onSubmit={authMode === 'signup' ? handleSignupSubmit : handleLoginSubmit} className="space-y-4 font-poppins text-xs text-left">
+              {authMode === 'signup' && (
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-zinc-400">Full Name</label>
+                  <div className="relative">
+                    <User size={14} className="absolute left-3.5 top-3.5 text-brand-textSec" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. John Doe"
+                      value={signupForm.name}
+                      onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                      className="w-full h-11 pl-10 pr-4 bg-brand-card/50 border border-white/5 rounded-xl text-white outline-none focus:border-brand-orange transition-all font-poppins text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="font-semibold text-zinc-400">
+                  {authMode === 'signup' ? 'Email Address' : 'Email or Phone'}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3.5 text-brand-textSec font-semibold">@</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder={authMode === 'signup' ? "e.g. john@example.com" : "Enter email or phone..."}
+                    value={authMode === 'signup' ? signupForm.email : loginForm.phoneOrEmail}
+                    onChange={(e) => authMode === 'signup' 
+                      ? setSignupForm({ ...signupForm, email: e.target.value })
+                      : setLoginForm({ ...loginForm, phoneOrEmail: e.target.value })}
+                    className="w-full h-11 pl-10 pr-4 bg-brand-card/50 border border-white/5 rounded-xl text-white outline-none focus:border-brand-orange transition-all font-poppins text-xs"
+                  />
+                </div>
+              </div>
+
+              {authMode === 'signup' && (
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-zinc-400">Phone Number</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-3.5 text-brand-textSec font-bold text-[10px]">+91</span>
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      placeholder="98401 23456"
+                      value={signupForm.phone}
+                      onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value.replace(/\D/g, '') })}
+                      className="w-full h-11 pl-12 pr-4 bg-brand-card/50 border border-white/5 rounded-xl text-white outline-none focus:border-brand-orange transition-all font-poppins text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <label className="font-semibold text-zinc-400">Account Type</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => authMode === 'signup' 
+                      ? setSignupForm({ ...signupForm, role: 'client' }) 
+                      : setLoginForm({ ...loginForm, role: 'client' })}
+                    className={`h-11 rounded-xl font-bold flex items-center justify-center gap-2 border transition-all ${
+                      (authMode === 'signup' ? signupForm.role === 'client' : loginForm.role === 'client')
+                        ? 'bg-brand-orange/15 border-brand-orange text-brand-orange'
+                        : 'glass-panel border-white/5 text-zinc-500 hover:text-white'
+                    }`}
+                  >
+                    Client
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => authMode === 'signup' 
+                      ? setSignupForm({ ...signupForm, role: 'creator' })
+                      : setLoginForm({ ...loginForm, role: 'creator' })}
+                    className={`h-11 rounded-xl font-bold flex items-center justify-center gap-2 border transition-all ${
+                      (authMode === 'signup' ? signupForm.role === 'creator' : loginForm.role === 'creator')
+                        ? 'bg-brand-orange/15 border-brand-orange text-brand-orange'
+                        : 'glass-panel border-white/5 text-zinc-500 hover:text-white'
+                    }`}
+                  >
+                    Creator
+                  </button>
+                </div>
+              </div>
+
+              <AnimatedButton
+                id="auth-submit-btn"
+                variant="primary"
+                type="submit"
+                className="w-full h-11 mt-4"
+              >
+                {authMode === 'signup' ? 'Send OTP to Verify' : 'Request Login OTP'}
+              </AnimatedButton>
+
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode(authMode === 'signup' ? 'login' : 'signup');
+                    setAuthError('');
+                  }}
+                  className="text-xs text-brand-orange hover:underline font-poppins cursor-pointer"
+                >
+                  {authMode === 'signup' ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* OTP Verification Screen */
+            <form onSubmit={handleOtpVerify} className="space-y-6 font-poppins text-xs">
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex gap-2 justify-center">
+                  {otpVal.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      id={`otp-input-${idx}`}
+                      type="text"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      className="w-12 h-12 text-center text-lg font-bold bg-brand-card/70 border border-white/10 rounded-xl text-white focus:border-brand-orange focus:outline-none transition-colors"
+                    />
+                  ))}
+                </div>
+                
+                <span className="text-[10px] text-zinc-500 font-medium">
+                  Didn't receive code? <span className="text-brand-orange hover:underline cursor-pointer">Resend OTP</span>
+                </span>
+                
+                <div className="bg-brand-orange/10 border border-brand-orange/20 text-brand-orange text-[10px] font-bold tracking-wide rounded-xl px-4 py-2 animate-pulse">
+                  Demo Code: 2026
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAuthStep('form')}
+                  className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-brand-textSec hover:text-white font-bold"
+                >
+                  Back
+                </button>
+                <AnimatedButton
+                  id="otp-verify-btn"
+                  variant="primary"
+                  type="submit"
+                  className="flex-1 h-11"
+                >
+                  {authLoading ? 'Verifying...' : 'Verify OTP'}
+                </AnimatedButton>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-transparent pb-32 lg:pl-76">
@@ -154,7 +455,7 @@ export default function UserProfilePage() {
               {/* Log out simulation */}
               <button
                 id="user-logout-btn"
-                onClick={() => navigate('/')}
+                onClick={handleSignOut}
                 className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl glass-panel border border-white/10 text-brand-textSec hover:text-white text-xs font-poppins font-medium active:scale-95 transition-all cursor-pointer"
               >
                 <LogOut className="h-4 w-4 text-brand-orange" /> Sign Out
@@ -263,7 +564,7 @@ export default function UserProfilePage() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] uppercase font-bold text-brand-textSec">Phone Coordinates</span>
-                    <span className="text-white font-medium">+91 98401 23456</span>
+                    <span className="text-white font-medium">{activeUser.phone}</span>
                   </div>
                 </div>
               </div>

@@ -12,6 +12,24 @@ export const ThemeProvider = ({ children }) => {
   });
 
   const [role, setRole] = useState('client');
+  const [user, setUser] = useState(null);
+
+  const login = (userData) => {
+    setUser(userData);
+    setRole(userData.role);
+    sessionStorage.setItem('r2r-user', JSON.stringify(userData));
+  };
+
+  const logout = () => {
+    setUser(null);
+    sessionStorage.removeItem('r2r-user');
+  };
+
+  // Clear data automatically on refresh/reload
+  useEffect(() => {
+    sessionStorage.removeItem('r2r-user');
+    setUser(null);
+  }, []);
 
   const [bookings, setBookings] = useState(() => {
     const saved = localStorage.getItem('r2r-bookings');
@@ -52,8 +70,12 @@ export const ThemeProvider = ({ children }) => {
       setTheme, 
       toggleTheme, 
       role, 
+      setRole,
       bookings,
-      setBookings: updateBookings
+      setBookings: updateBookings,
+      user,
+      login,
+      logout
     }}>
       {children}
     </ThemeContext.Provider>

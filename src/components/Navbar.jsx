@@ -8,7 +8,18 @@ import { useTheme } from '../context/ThemeContext';
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, toggleTheme, role } = useTheme();
+  const { theme, toggleTheme, role, user } = useTheme();
+
+  const userAvatar = user 
+    ? (user.role === 'creator' 
+      ? "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=80&q=80" 
+      : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80")
+    : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80"; // Default guest placeholder
+
+  const userName = user ? user.name : 'Sign In';
+  const userSub = user 
+    ? (user.role === 'creator' ? 'Marketplace Creator' : 'Creator Client') 
+    : 'Guest Account';
 
   const clientNavItems = [
     { name: 'Home', path: '/home', icon: Home },
@@ -67,7 +78,7 @@ export default function Navbar() {
             className="h-8 w-8 rounded-full border border-brand-orange/45 overflow-hidden cursor-pointer relative active:scale-95 transition-transform"
           >
             <img 
-              src={role === 'creator' ? "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=80&q=80" : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80"} 
+              src={userAvatar} 
               alt="Profile" 
               className="h-full w-full object-cover"
             />
@@ -154,17 +165,17 @@ export default function Navbar() {
             >
               <div className="h-8 w-8 rounded-full border border-brand-orange/40 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                 <img 
-                  src={role === 'creator' ? "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80" : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"} 
+                  src={userAvatar} 
                   alt="Profile" 
                   className="h-full w-full object-cover"
                 />
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-xs font-semibold text-brand-dark dark:text-white font-poppins leading-tight truncate max-w-[80px]">
-                  {role === 'creator' ? 'Karthik Raja' : 'Raam'}
+                  {userName}
                 </span>
                 <span className="text-[8px] text-zinc-500 dark:text-brand-textSec font-poppins truncate max-w-[80px]">
-                  {role === 'creator' ? 'Marketplace Creator' : 'Creator Client'}
+                  {userSub}
                 </span>
               </div>
             </div>

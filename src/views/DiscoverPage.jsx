@@ -118,9 +118,9 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-transparent pb-24 lg:pl-76">
+    <div className="relative min-h-screen bg-transparent pb-24 pt-14 lg:pt-0 lg:pl-76">
       {/* Sticky Top Header Filter Bar */}
-      <div className="sticky top-18 lg:top-0 left-0 right-0 z-30 glass-panel border-b border-brand-lightBorder dark:border-white/5 py-4 px-6 md:px-12 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="sticky top-14 lg:top-0 left-0 right-0 z-30 glass-panel border-b border-brand-lightBorder dark:border-white/5 py-4 px-6 md:px-12 flex flex-col md:flex-row gap-4 items-center justify-between">
         
         {/* Search Field */}
         <div className="relative w-full md:w-96">
